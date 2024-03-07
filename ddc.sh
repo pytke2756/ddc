@@ -24,9 +24,9 @@ CONTAINER_WITH_TIME="${CONTAINER_NAME}-${CURRENT_DATE}"
 docker exec -it ${CONTAINER_NAME} psql -U ${USER} -d ${DB_NAME} -c "INSERT INTO kor (id, ember_id, kor) VALUES ('2', '2', '4444');"
 
 if [ -z "$PORT" ]; then
-  docker create --name ${CONTAINER_WITH_TIME}  -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "5888:5432" db
+  docker create --name ${CONTAINER_WITH_TIME} -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "5888:5432" db
 else
-  docker create --name ${CONTAINER_WITH_TIME}  -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "${PORT}:5432" db
+  docker create --name ${CONTAINER_WITH_TIME} -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "${PORT}:5432" db
 fi
 
 sleep 5
