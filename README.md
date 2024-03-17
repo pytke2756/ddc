@@ -16,5 +16,5 @@
 ```
 
 ```shell
-3. foo@bar:~$ ./linux-argument.sh -u user -p pass -d my-db -c db1
+3. foo@bar:~$ ./linux-argument.sh -u user -p pass -d my-db -c db1 ([OPTIONAL] -t '5678')
 ```
