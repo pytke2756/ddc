@@ -27,51 +27,61 @@ docker_watch() {
   done
 }
 
-while getopts u:p:d:c:t: flag;
+while getopts u:p:d:f:g:c:t: flag;
 do
   case ${flag} in
     u) USER="$OPTARG";;
     p) PASSWORD="$OPTARG";;
     d) DB_NAME="$OPTARG";;
-    c) CONTAINER_NAME="$OPTARG";;
+    f) FROM_CONTAINER_NAME="$OPTARG";;
+    g) TO_CONTAINER_NAME="$OPTARG";;
     t) PORT="$OPTARG";;
     *) ;;
   esac
 done
 
+if [ -z $PORT ]; then
+  PORT="5432"
+fi
+
 echo "user: $USER";
 echo "password: $PASSWORD";
 echo "db-name: $DB_NAME-db";
-echo "container-name: $CONTAINER_NAME"
+echo "from-container-name: $FROM_CONTAINER_NAME"
+echo "to-container-name: $TO_CONTAINER_NAME"
 echo "port: $PORT"
 
-CURRENT_DATE=$(date +"%Y-%m-%d")
-CONTAINER_WITH_TIME="${CONTAINER_NAME}-${CURRENT_DATE}"
+DEFAULT_FILE_NAME="db.dump"
 
-docker exec -it ${CONTAINER_NAME} psql -U ${USER} -d ${DB_NAME} -c "INSERT INTO kor (id, ember_id, kor) VALUES ('2', '2', '4444');"
-exit_codes $?
-
-if [ -z "$PORT" ]; then
-  IMAGE=$(docker create --name ${CONTAINER_WITH_TIME} -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "5888:5432" db)
-else
-  IMAGE=$(docker create --name ${CONTAINER_WITH_TIME} -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "${PORT}:5432" db)
-fi
-
-if [ -z "$IMAGE" ]; then
-  exit 1;
-fi
-
-docker exec -it ${CONTAINER_NAME} pg_dump -U ${USER} -d ${DB_NAME} -Fc -f db.dump && docker cp ${CONTAINER_NAME}:db.dump .
-sleep 1;
-
-docker stop ${CONTAINER_NAME}
-docker start ${CONTAINER_WITH_TIME}
-exit_codes $?
-docker_watch "$CONTAINER_WITH_TIME"
-docker cp db.dump ${CONTAINER_WITH_TIME}:/
+PATH_TO_FILE="."
+echo '-------------------------------------'
+./dump.sh -u ${USER} -d ${DB_NAME} -c ${FROM_CONTAINER_NAME} -f ${DEFAULT_FILE_NAME} ${PATH_TO_FILE}
+docker stop ${FROM_CONTAINER_NAME}
 sleep 1
-if [ -z "$PORT" ]; then
-  docker exec -it ${CONTAINER_WITH_TIME} pg_restore --if-exists -c -U ${USER} -d ${DB_NAME} db.dump
-else
-  docker exec -it ${CONTAINER_WITH_TIME} pg_restore -p '5432' --if-exists -c -U ${USER} -d ${DB_NAME} db.dump
-fi
+./restore.sh -u ${USER} -d ${DB_NAME} -c ${TO_CONTAINER_NAME}
+# CURRENT_DATE=$(date +"%Y-%m-%d")
+# CONTAINER_WITH_TIME="${FROM_CONTAINER_NAME}-${CURRENT_DATE}"
+
+# docker exec -it ${FROM_CONTAINER_NAME} psql -U ${USER} -d ${DB_NAME} -c "INSERT INTO kor (id, ember_id, kor) VALUES ('2', '2', '4444');"
+# exit_codes $?
+
+#IMAGE=$(docker create --name ${CONTAINER_WITH_TIME} -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "${PORT}:5432" db)
+
+# if [ -z "$IMAGE" ]; then
+#   exit 1;
+# fi
+
+# docker exec -it ${FROM_CONTAINER_NAME} pg_dump -U ${USER} -d ${DB_NAME} -Fc -f db.dump && docker cp ${FROM_CONTAINER_NAME}:db.dump .
+# sleep 1;
+
+# docker stop ${FROM_CONTAINER_NAME}
+# docker start ${CONTAINER_WITH_TIME}
+# exit_codes $?
+# docker_watch "$CONTAINER_WITH_TIME"
+# docker cp db.dump ${CONTAINER_WITH_TIME}:/
+# sleep 1
+# if [ -z "$PORT" ]; then
+#   docker exec -it ${CONTAINER_WITH_TIME} pg_restore --if-exists -c -U ${USER} -d ${DB_NAME} db.dump
+# else
+#   docker exec -it ${CONTAINER_WITH_TIME} pg_restore -p '5432' --if-exists -c -U ${USER} -d ${DB_NAME} db.dump
+# fi
