@@ -59,18 +59,21 @@ echo '-------------------------------------'
 docker stop "${FROM_CONTAINER_NAME}"
 sleep 1
 
-CURRENT_DATE=$(date +"%Y-%m-%d")
-CONTAINER_WITH_TIME="${FROM_CONTAINER_NAME}-${CURRENT_DATE}"
-IMAGE=$(docker create --name "${CONTAINER_WITH_TIME}" -e POSTGRES_USER="${USER}" -e POSTGRES_PASSWORD="${PASSWORD}" -e POSTGRES_DB="${DB_NAME}" -p "${PORT}:5432" db)
+if [ -z "$TO_CONTAINER_NAME" ]; then
+  CURRENT_DATE=$(date +"%Y-%m-%d")
+  TO_CONTAINER_NAME="${FROM_CONTAINER_NAME}-${CURRENT_DATE}"
+fi
+
+IMAGE=$(docker create --name "${TO_CONTAINER_NAME}" -e POSTGRES_USER="${USER}" -e POSTGRES_PASSWORD="${PASSWORD}" -e POSTGRES_DB="${DB_NAME}" -p "${PORT}:5432" db)
 
 if [ -z "$IMAGE" ]; then
   exit 1;
 fi
 sleep 3
-docker start "${CONTAINER_WITH_TIME}"
+docker start "${TO_CONTAINER_NAME}"
 sleep 3
 
-./restore.sh -u "${USER}" -d "${DB_NAME}" -c "${CONTAINER_WITH_TIME}" -p "${PORT}"
+./restore.sh -u "${USER}" -d "${DB_NAME}" -c "${TO_CONTAINER_NAME}" -p "${PORT}"
 
 
 # docker exec -it ${FROM_CONTAINER_NAME} psql -U ${USER} -d ${DB_NAME} -c "INSERT INTO kor (id, ember_id, kor) VALUES ('2', '2', '4444');"
