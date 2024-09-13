@@ -33,6 +33,6 @@ echo "port: $PORT";
 echo "source: $SOURCE";
 echo "file-name: $FILE_NAME";
 
-docker cp ${SOURCE} ${CONTAINER_NAME}:/ && docker exec -it ${CONTAINER_NAME} pg_restore -p ${PORT} --if-exists -c -U ${USER} -d ${DB_NAME} ${FILE_NAME}
+docker cp ${SOURCE} "${CONTAINER_NAME}":/ && docker exec -it "${CONTAINER_NAME}" pg_restore -p 5432 --if-exists -c -U "${USER}" -d "${DB_NAME}" ${FILE_NAME}
 
 exit 1
