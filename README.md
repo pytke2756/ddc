@@ -12,7 +12,7 @@
 ```
 
 ```shell
-2. foo@bar:~$ docker run --name db1 -e POSTGRES_USER=user -e POSTGRES_DB=my-db -e POSTGRES_PASSWORD=pass -d db
+2. foo@bar:~$ docker run --name db1 -p 5888:5432 -e POSTGRES_USER=user -e POSTGRES_DB=my-db -e POSTGRES_PASSWORD=pass -d db
 ```
 
 ```shell
