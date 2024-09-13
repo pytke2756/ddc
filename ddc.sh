@@ -40,7 +40,7 @@ do
   esac
 done
 
-if [ -z $PORT ]; then
+if [ -z "$PORT" ]; then
   PORT="5432"
 fi
 
@@ -55,21 +55,27 @@ DEFAULT_FILE_NAME="db.dump"
 
 PATH_TO_FILE="."
 echo '-------------------------------------'
-./dump.sh -u ${USER} -d ${DB_NAME} -c ${FROM_CONTAINER_NAME} -f ${DEFAULT_FILE_NAME} ${PATH_TO_FILE}
-docker stop ${FROM_CONTAINER_NAME}
+./dump.sh -u "${USER}" -d "${DB_NAME}" -c "${FROM_CONTAINER_NAME}" -f "${DEFAULT_FILE_NAME}" "${PATH_TO_FILE}"
+docker stop "${FROM_CONTAINER_NAME}"
 sleep 1
-./restore.sh -u ${USER} -d ${DB_NAME} -c ${TO_CONTAINER_NAME}
-# CURRENT_DATE=$(date +"%Y-%m-%d")
-# CONTAINER_WITH_TIME="${FROM_CONTAINER_NAME}-${CURRENT_DATE}"
+
+CURRENT_DATE=$(date +"%Y-%m-%d")
+CONTAINER_WITH_TIME="${FROM_CONTAINER_NAME}-${CURRENT_DATE}"
+IMAGE=$(docker create --name "${CONTAINER_WITH_TIME}" -e POSTGRES_USER="${USER}" -e POSTGRES_PASSWORD="${PASSWORD}" -e POSTGRES_DB="${DB_NAME}" -p "${PORT}:5432" db)
+
+if [ -z "$IMAGE" ]; then
+  exit 1;
+fi
+sleep 3
+docker start "${CONTAINER_WITH_TIME}"
+sleep 3
+
+./restore.sh -u "${USER}" -d "${DB_NAME}" -c "${CONTAINER_WITH_TIME}" -p "${PORT}"
+
 
 # docker exec -it ${FROM_CONTAINER_NAME} psql -U ${USER} -d ${DB_NAME} -c "INSERT INTO kor (id, ember_id, kor) VALUES ('2', '2', '4444');"
 # exit_codes $?
 
-#IMAGE=$(docker create --name ${CONTAINER_WITH_TIME} -e POSTGRES_USER=${USER} -e POSTGRES_PASSWORD=${PASSWORD} -e POSTGRES_DB=${DB_NAME} -p "${PORT}:5432" db)
-
-# if [ -z "$IMAGE" ]; then
-#   exit 1;
-# fi
 
 # docker exec -it ${FROM_CONTAINER_NAME} pg_dump -U ${USER} -d ${DB_NAME} -Fc -f db.dump && docker cp ${FROM_CONTAINER_NAME}:db.dump .
 # sleep 1;
