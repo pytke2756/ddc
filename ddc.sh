@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 exit_codes() {
   if [ "$1" -ne "0" ]; then
