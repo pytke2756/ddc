@@ -11,16 +11,16 @@ do
   esac
 done
 
-if [ -z $PORT ]; then
+if [ -z "$PORT" ]; then
   PORT="5432"
 fi
 
 shift $((OPTIND -1))
 
 SOURCE=$1
-
-if [[ $SOURCE =~ /([^/]+)\.([^/]+[dump])$ ]]; then
-  FILE_NAME=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}
+echo "${SOURCE}"
+if [[ $SOURCE =~ ^([^/]+)\.(dump)$ ]]; then
+  FILE_NAME="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
 else
   SOURCE="./db.dump"
   FILE_NAME="db.dump"
